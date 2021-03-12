@@ -1,0 +1,112 @@
+
+; Text Adventure Game 'Yesternight' by Robert Szacki 
+
+; Written for AdvSys by David Betz
+
+(adventure Yesternight 1)
+
+(property east west north south down up)
+(property describe take taken loc drop)
+
+(synonym east e)
+(synonym west w)
+(synonym north n)
+(synonym south s)
+(synonym down d)
+(synonym up u)
+(synonym inventory i)
+(synonym take get)
+(synonym look l)
+(synonym examine x)
+
+(variable playerloc) ; Current location
+
+@std.adi
+
+(init 
+	(setq playerloc basement)	
+	(print "Welcome to adventure by Robert Szacki\n\n")
+	(send playerloc describe)
+)
+
+(default
+	(actor forbidden)
+)
+
+(action look
+	(verb look)	
+	(code
+		(send playerloc describe)		
+	)
+)
+
+(action examine-action
+	(verb examine)
+	(direct-object)
+	(code
+		(if (match sword-object $dobject)
+			(send sword-object describe)
+		(print "Hmm...\n")
+		)
+	)
+)
+	
+(object sword-object
+	(noun sword weapon)
+	(property 
+		taken 	NIL 
+		loc 	castle
+	)
+	(property loc castle)
+	(method (describe)
+		(if (getp self taken)
+			(print "This is steel sword, possesed by a knight.\n")
+			(print "You're not carrying a sword.\n")
+		)		
+	)
+	(method (take)
+		(print "You picked up the sword.\n")
+		(setp self taken T)
+		(setp self loc player)
+	)
+	(method (drop)
+		(print "You dropped the sword.\n")
+		(setp self taken NIL)
+		(setp self loc playerloc)
+	)
+)
+
+(object player
+)
+
+(object location
+	(method (describe)
+		(if (= (getp sword-object loc) playerloc)
+			(progn
+				(print "There is a steel sword here.\n")
+			)
+		)
+	)
+)
+
+(location castle
+	(noun castle)
+	(property
+		down	basement
+	)
+	(method (describe)
+		(print "You are in a main castle hall. Some furniture is lying around.\n")
+		(send-super describe)
+	)
+)
+
+(location basement
+	(noun basement)
+	(property
+		up	castle
+	)
+	(method (describe)
+		(print "You are in a basement of the castle. The light is dim. Stairs lead upward.\n")
+		(send-super describe)
+	)
+)

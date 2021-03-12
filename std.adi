@@ -1,0 +1,117 @@
+
+; Standard include
+
+(define noexit "There is no exit in given direction!\n")
+
+(action inventory
+	(verb inventory)
+	(code
+		(if (getp sword-object taken)
+			(print "You're carrying a steel sword.\n")
+			(print "You're carrying nothing.\n")
+		)
+	)
+)
+
+(action take-action
+	(verb take)
+	(direct-object)
+	(code
+		(if (match sword-object $dobject)
+			(if (= (getp sword-object loc) playerloc)
+				(send sword-object take)	
+				(print "You can't see a sword here.\n")
+			)
+			(progn
+				(print "You can't take ");
+				(print-noun $dobject)
+				(print "!\n")
+			)
+		)
+	)
+)
+
+(action drop-action
+	(verb drop)
+	(direct-object)
+	(code
+		(if (match sword-object $dobject)
+			(if (= (getp sword-object loc) player)
+				(send sword-object drop)
+				(print "You aren't carrying a sword!\n")
+			)
+		)
+	)
+)
+
+(action go-north
+	(verb north (go north))
+	(code
+		;(send %actor move north)
+		(print noexit)
+	)
+)
+
+(action go-south
+	(verb south (go south))
+	(code
+		;(send %actor move south)
+		(print noexit)
+	)
+)
+
+(action go-east
+	(verb east (go east))
+	(code
+		;(send %actor move east)
+		(print noexit)
+	)
+)
+
+(action go-west
+	(verb west (go west))
+	(code
+		;(send %actor move west)
+		(print noexit)
+	)
+)
+
+(action go-up
+	(verb up (go up) (climb up))
+	(code
+		;(send %actor move up)
+		(if (= (getp playerloc up) castle)
+			(progn
+				(print "Going upstairs...\n")
+				(setq playerloc castle)
+				(send playerloc describe)
+			)
+			(print noexit)			
+		)
+	)
+)
+
+(action go-down
+	(verb down (go down) (climb down))
+	(code
+		;(send %actor move down)
+		(if (= (getp playerloc down) basement)
+			(progn
+				(print "Going downstairs...\n")
+				(setq playerloc basement)
+				(send playerloc describe)
+			)
+			(print noexit)
+		)
+	)
+)
+
+(action quit
+	(verb quit)
+	(code
+		(print "Are you sure you want to quit? ")
+		(if (yes-or-no)
+			(exit)
+		)
+	)
+)
