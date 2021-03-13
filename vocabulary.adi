@@ -1,0 +1,22 @@
+
+;==================================
+; Vocabulary
+;==================================
+
+( article			the that )
+( conjunction		and )
+( preposition		to with )
+
+;==================================
+; Synonyms
+;==================================
+
+( synonym east 		e )
+( synonym west 		w )
+( synonym north 	n )
+( synonym south 	s )
+( synonym down 		d )
+( synonym up 		u )
+( synonym inventory i )
+( synonym look 		l )
+( synonym examine 	x )

@@ -1,89 +1,146 @@
 
+;=====================================================
 ; Text Adventure Game 'Yesternight' by Robert Szacki 
 
 ; Written for AdvSys by David Betz
+;=====================================================
 
-(adventure Yesternight 1)
+( adventure Yesternight 1 )
 
-(property east west north south down up)
-(property describe take taken loc drop)
+; Properties
+@props.adi
 
-(synonym east e)
-(synonym west w)
-(synonym north n)
-(synonym south s)
-(synonym down d)
-(synonym up u)
-(synonym inventory i)
-(synonym take get)
-(synonym look l)
-(synonym examine x)
+; Vocabulary
+@vocabulary.adi
 
-(variable playerloc) ; Current location
+; Variables
+@vars.adi
 
-@std.adi
+; Useful functions
+@funcs.adi
 
-(init 
-	(setq playerloc basement)	
-	(print "Welcome to adventure by Robert Szacki\n\n")
-	(send playerloc describe)
+; Default action settings
+( default
+	( actor forbidden )
 )
 
-(default
-	(actor forbidden)
-)
+; Game objects follow
 
-(action look
-	(verb look)	
-	(code
-		(send playerloc describe)		
+( synonym rum bottle )
+
+(object item-object
+		
+	(method (take)
+		(print "You picked up ")
+		(print-noun $dobject )
+		(print ".\n")
+		(add-item self player)		
 	)
-)
-
-(action examine-action
-	(verb examine)
-	(direct-object)
-	(code
-		(if (match sword-object $dobject)
-			(send sword-object describe)
-		(print "Hmm...\n")
-		)
+	(method (drop)
+		(print "You dropped ")
+		(print-noun $dobject)
+		(print ".\n")		
+		(add-item self playerloc)		
 	)
 )
 	
-(object sword-object
+(item-object sword-object
 	(noun sword weapon)
 	(property 
-		taken 	NIL 
-		loc 	castle
-	)
-	(property loc castle)
+		next-item NIL
+		prev-item NIL
+		current-location 	castle
+		short-desc "A steel sword.\n"
+	)	
 	(method (describe)
-		(if (getp self taken)
-			(print "This is steel sword, possesed by a knight.\n")
-			(print "You're not carrying a sword.\n")
+		(print "There is a sword here.\n")
+	)
+
+	(method (examine-object)
+		(print "This is steel sword, possesed by a knight.\n")
+	)
+)
+
+(item-object rum-object
+	(noun rum)
+	(property
+		drunk NIL
+		next-item NIL
+		prev-item NIL	
+		current-location		basement
+		short-desc "A bottle.\n"
+	)
+	(method (describe)
+		(if (not (getp self drunk))
+			(print "There is a rum here.\n")
+			(print "There is an empty bottle here.\n")
+		)
+	)
+	(method (examine-object)
+		(if (not drunk)
+			(print "This is a bottle with an old rum.\n")
+			(print "This is an empty bottle.\n")
+		)
+	)
+)
+
+(object location	
+	(method (describe &aux curitem)
+		(setq curitem (getp self first-item))
+		(while curitem
+			(send curitem describe)
+			(setq curitem (getp curitem next-item))
+		)
+	)
+	(method (take it &aux found)
+		(if (setq found (find-item it self))
+			(send found take)	
+			(progn
+				(print "You can't see ")
+				(print-noun it)
+				(print " here!\n")
+			)		
+		)
+	)
+
+)
+
+(location player
+	(property
+		first-item	NIL
+	)
+	(method (drop it &aux found)
+		(if (setq found (find-item it player))
+			(send found drop)
+			(progn	
+				(print "You aren't carrying ");
+				(print-noun $dobject)
+				(print "!\n")
+			)
 		)		
 	)
-	(method (take)
-		(print "You picked up the sword.\n")
-		(setp self taken T)
-		(setp self loc player)
-	)
-	(method (drop)
-		(print "You dropped the sword.\n")
-		(setp self taken NIL)
-		(setp self loc playerloc)
-	)
-)
-
-(object player
-)
-
-(object location
-	(method (describe)
-		(if (= (getp sword-object loc) playerloc)
+	(method (describe &aux curitem)
+		(if (= (setq curitem (getp self first-item)) NIL)
+			(print "You are carrying nothing.\n")
 			(progn
-				(print "There is a steel sword here.\n")
+				(print "You are carrying:\n")
+				(while curitem
+					(print (getp curitem short-desc))					
+					(setq curitem (getp curitem next-item))
+				)
+			)
+		)
+	)
+	(method (examine-object &aux found)
+		(if (setq found (find-item $dobject playerloc))
+			(send found examine-object)
+			(if (setq found (find-item $dobject player))
+				(send found examine-object)
+				(progn
+					(print "I can't see ")
+					(print-noun $dobject)
+					(print " here!\n")
+				)
 			)
 		)
 	)
@@ -93,6 +150,7 @@
 	(noun castle)
 	(property
 		down	basement
+		first-item	sword-object
 	)
 	(method (describe)
 		(print "You are in a main castle hall. Some furniture is lying around.\n")
@@ -104,9 +162,28 @@
 	(noun basement)
 	(property
 		up	castle
+		first-item	rum-object
 	)
 	(method (describe)
 		(print "You are in a basement of the castle. The light is dim. Stairs lead upward.\n")
 		(send-super describe)
+	)
+)
+
+@std.adi
+
+; Handlers
+
+(init 
+	(setq playerloc basement)	
+	(print "Welcome to adventure by Robert Szacki\n\n")
+	(send playerloc describe)
+	(setq energy-level 50)
+)
+
+(update
+	(setq energy-level (- energy-level 1))
+	(if (= energy-level 45)
+		(print "Warning: you need food and drink.\n")
 	)
 )

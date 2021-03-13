@@ -1,0 +1,44 @@
+
+;==================================
+; Useful functions
+;==================================
+
+; Find an item in the location
+
+( define ( find-item it loc &aux curitem )
+	( setq curitem ( getp loc first-item ) )
+	( while curitem
+		( if ( match curitem it )
+			( return curitem )
+		)
+		( setq curitem ( getp curitem next-item ) )
+	)
+	( return NIL )
+)
+
+; Remove item from given location
+
+(define (remove-item it &aux previt nextit)
+	(setq previt (getp it prev-item))
+	(setq nextit (getp it next-item))	
+	(if previt
+		(setp previt next-item nextit)
+		(setp (getp it current-location) first-item nextit)
+	)
+	(if nextit
+		(setp nextit prev-item previt)
+	)
+)
+
+; Add item to new location
+
+(define (add-item it loc2 &aux prev)
+	(remove-item it)
+	(setp it prev-item NIL)
+	(if (setq prev (getp loc2 first-item))
+		(setp prev prev-item it)
+	)
+	(setp it next-item prev)
+	(setp loc2 first-item it)
+	(setp it current-location loc2)
+)

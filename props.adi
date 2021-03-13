@@ -1,0 +1,16 @@
+
+;==================================
+; Basic properties
+;==================================
+
+; Location properties
+( property up down ) 
+
+; Content properties
+( property first-item next-item prev-item ) 
+
+; Location of an item
+( property current-location ) 
+
+; Descriptions
+( property short-desc )

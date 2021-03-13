@@ -1,0 +1,10 @@
+
+;==================================
+; Variables
+;==================================
+
+; Current player location
+( variable playerloc ) 
+
+( variable energy-level )
+

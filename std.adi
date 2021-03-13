@@ -1,33 +1,51 @@
 
+;==================================
 ; Standard include
+;==================================
 
 (define noexit "There is no exit in given direction!\n")
 
 (action inventory
 	(verb inventory)
 	(code
-		(if (getp sword-object taken)
-			(print "You're carrying a steel sword.\n")
-			(print "You're carrying nothing.\n")
-		)
+		(send player describe)
+	)
+)
+
+(action look
+	(verb look)	
+	(code
+		(send playerloc describe)		
+	)
+)
+
+(action examine-action
+	(verb examine)
+	(direct-object)
+	(code		
+		(send player examine-object)
+	)
+)
+
+(action examine-error
+	(verb examine)	
+	(code		
+		(print "You must specify what to examine.\n")
 	)
 )
 
 (action take-action
-	(verb take)
+	(verb take get (pick up))
 	(direct-object)
 	(code
-		(if (match sword-object $dobject)
-			(if (= (getp sword-object loc) playerloc)
-				(send sword-object take)	
-				(print "You can't see a sword here.\n")
-			)
-			(progn
-				(print "You can't take ");
-				(print-noun $dobject)
-				(print "!\n")
-			)
-		)
+		(send playerloc take $dobject)
+	)
+)
+
+(action take-error
+	(verb take get (pick up))
+	(code
+		(print "You must specify what to pick up.\n")
 	)
 )
 
@@ -35,12 +53,53 @@
 	(verb drop)
 	(direct-object)
 	(code
-		(if (match sword-object $dobject)
-			(if (= (getp sword-object loc) player)
-				(send sword-object drop)
-				(print "You aren't carrying a sword!\n")
+		(send player drop $dobject)		
+	)
+)
+
+(action drop-error
+	(verb drop)
+	(code
+		(print "You must specify what to drop.\n")
+	)
+)
+
+(action energy-action
+	(verb energy)
+	(code
+		(print "Your energy level: ")
+		(print-number energy-level)
+		(print "%\n");
+	)
+)
+
+(action drink-action
+	(verb drink)
+	(direct-object)
+	(code
+		(if (match rum-object $dobject)
+			(if (find-item $dobject player)
+				(if (not (getp rum-object drunk))
+					(progn
+						(print "You drunk the rum.\n")
+						(setq energy-level (+ energy-level 25))
+						(setp rum-object drunk T)
+					)
+					(print "The bottle is empty.\n")
+				)
+				(progn
+					(print "You aren't carrying ")
+					(print-noun $dobject)
+					(print "!\n")
+				)
+			)
+			(progn
+				(print "You can't drink ")
+				(print-noun $dobject)
+				(print ".\n")
 			)
 		)
+		
 	)
 )
 
